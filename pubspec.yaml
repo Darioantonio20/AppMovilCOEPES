@@ -1,0 +1,25 @@
+name: appcoepes
+description: "A new Flutter project."
+publish_to: 'none' 
+version: 1.0.0+1
+environment:
+  sdk: ^3.5.3
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  #flutter_lints: ^4.0.0
+
+flutter:
+  assets:
+    - assets/images/imgNanio.png
+    - assets/images/imgUligami.png
+    - assets/images/imgLuis.png
+    - assets/images/imgDarinel.png
+  uses-material-design: true
