@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'screens/contact.dart';
+import 'screens/dev_team.dart';
 import 'screens/home.dart';
-import 'screens/about.dart';
+import 'screens/chat_bot.dart';
+import 'screens/logo_animation.dart'; 
 
 void main() {
   runApp(MyApp());
@@ -11,12 +12,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MainScreen(),
+      home: LogoAnimation(),
       routes: {
-        '/contact': (context) => ContactScreen(),
+        '/main': (context) => MainScreen(),
+        '/contact': (context) => DevTeam(),
         '/home': (context) => HomeView(),
-        '/about': (context) => AboutView(),
+        '/chat_bot': (context) => ChatBotView(),
       },
+
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -30,8 +34,8 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   static List<Widget> _widgetOptions = <Widget>[
     HomeView(),
-    ContactScreen(),
-    AboutView(),
+    DevTeam(),
+    ChatBotView(),
   ];
 
   void _onItemTapped(int index) {
@@ -45,11 +49,11 @@ class _MainScreenState extends State<MainScreen> {
       case 'home':
         Navigator.pushNamed(context, '/home');
         break;
-      case 'contact':
-        Navigator.pushNamed(context, '/contact');
+      case 'chat_bot':
+        Navigator.pushNamed(context, '/chat_bot');
         break;
-      case 'about':
-        Navigator.pushNamed(context, '/about');
+      case 'dev_team':
+        Navigator.pushNamed(context, '/dev_team');
         break;
     }
   }
@@ -57,39 +61,34 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('App Navigation'),
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            onSelected: _onMenuSelected,
-            itemBuilder: (BuildContext context) {
-              return {'home', 'contact', 'about'}.map((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice == 'home' ? 'Home' : choice == 'contact' ? 'Contact' : 'About'),
-                );
-              }).toList();
-            },
-          ),
-        ],
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          margin: EdgeInsets.only(top: 20.0), 
+        ),
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
+          
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'Inicio',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.contact_mail),
-            label: 'Contact',
+            icon: Icon(Icons.group),
+            label: 'Dev Team',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.info),
-            label: 'About',
+            icon: Icon(
+              Icons.smart_toy,
+              ),
+            label: 'Chat Bot',
           ),
         ],
         currentIndex: _selectedIndex,
+        selectedItemColor: Color(0xFF67358E), // Color cuando está seleccionado
+        unselectedItemColor: Colors.grey, 
         onTap: _onItemTapped,
       ),
     );
