@@ -23,7 +23,7 @@ class _LogoAnimationState extends State<LogoAnimation> with SingleTickerProvider
     _controller.forward();
 
     // Navegar a la pantalla principal después de 6 segundos
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacementNamed('/main');
     });
   }

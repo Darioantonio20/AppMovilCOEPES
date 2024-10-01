@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'screens/dev_team.dart';
 import 'screens/home.dart';
 import 'screens/chat_bot.dart';
-import 'screens/logo_animation.dart'; 
+import 'screens/logo_animation.dart';
+import 'screens/qr_scanner.dart'; // Importa la nueva vista QRScannerView
 
 void main() {
   runApp(MyApp());
@@ -18,8 +19,8 @@ class MyApp extends StatelessWidget {
         '/contact': (context) => DevTeam(),
         '/home': (context) => HomeView(),
         '/chat_bot': (context) => ChatBotView(),
+        '/qr_scanner': (context) => QRScannerView(), // Nueva ruta para el escáner QR
       },
-
       debugShowCheckedModeBanner: false,
     );
   }
@@ -61,16 +62,19 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(kToolbarHeight),
-        child: Container(
-          margin: EdgeInsets.only(top: 20.0), 
-        ),
+      appBar: AppBar(
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.qr_code),
+            onPressed: () {
+              Navigator.pushNamed(context, '/qr_scanner');
+            },
+          ),
+        ],
       ),
       body: _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Inicio',
@@ -80,14 +84,12 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Dev Team',
           ),
           BottomNavigationBarItem(
-            icon: Icon(
-              Icons.smart_toy,
-              ),
+            icon: Icon(Icons.smart_toy),
             label: 'Chat Bot',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Color(0xFF67358E), // Color cuando está seleccionado
+        selectedItemColor: Color(0xFF67358E), 
         unselectedItemColor: Colors.grey, 
         onTap: _onItemTapped,
       ),
