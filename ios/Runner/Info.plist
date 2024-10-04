@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 	<dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Esta aplicación necesita acceso al micrófono para transcribir voz a texto.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Necesitamos acceso al reconocimiento de voz para transcribir tu voz en texto.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -9,8 +13,6 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Necesitamos acceso a la cámara para escanear códigos QR.</string>
-	<key>NSMicrophoneUsageDescription</key>
-	<string>Esta aplicación necesita acceso al micrófono para transcribir voz a texto.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
