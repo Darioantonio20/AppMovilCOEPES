@@ -3,7 +3,8 @@ import 'screens/dev_team.dart';
 import 'screens/home.dart';
 import 'screens/chat_bot.dart';
 import 'screens/logo_animation.dart';
-import 'screens/qr_scanner.dart'; // Importa la nueva vista QRScannerView
+import 'screens/qr_scanner.dart';
+import 'screens/catalogo.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,7 +20,8 @@ class MyApp extends StatelessWidget {
         '/contact': (context) => DevTeam(),
         '/home': (context) => HomeView(),
         '/chat_bot': (context) => ChatBotView(),
-        '/qr_scanner': (context) => QRScannerView(), // Nueva ruta para el escáner QR
+        '/qr_scanner': (context) => QRScannerView(), 
+        '/catalogo': (context) => CatalogoView(), 
       },
       debugShowCheckedModeBanner: false,
     );
@@ -36,8 +38,9 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   static List<Widget> _widgetOptions = <Widget>[
     HomeView(),
-    DevTeam(),
+    CatalogoView(),
     ChatBotView(),
+    DevTeam(),
   ];
 
   void _onItemTapped(int index) {
@@ -56,6 +59,9 @@ class _MainScreenState extends State<MainScreen> {
         break;
       case 'dev_team':
         Navigator.pushNamed(context, '/dev_team');
+        break;
+      case 'catalogo':
+        Navigator.pushNamed(context, '/catalogo');
         break;
     }
   }
@@ -81,12 +87,16 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Inicio',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: 'Dev Team',
+            icon: Icon(Icons.book),
+            label: 'Catálogo',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.smart_toy),
             label: 'Chat Bot',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: 'Dev Team',
           ),
         ],
         currentIndex: _selectedIndex,
