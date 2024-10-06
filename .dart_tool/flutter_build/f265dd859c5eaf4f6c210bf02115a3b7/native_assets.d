@@ -1,0 +1,1 @@
+ /Users/darioantoniogutierrezalvarez/Desktop/appmovilcoepes/AppMovilCOEPES/.dart_tool/flutter_build/f265dd859c5eaf4f6c210bf02115a3b7/native_assets.yaml: 

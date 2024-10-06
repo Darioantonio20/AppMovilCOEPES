@@ -31,18 +31,40 @@ class _CatalogoViewState extends State<CatalogoView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Catálogo de universidades'),
+        title: Text('Catálogo de Instituciones'),
       ),
-      body: _instituciones.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _instituciones.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(_instituciones[index]['ssi_nombre']),
-                );
-              },
+      body: ListView.builder(
+        itemCount: _instituciones.length,
+        itemBuilder: (context, index) {
+          return Card(
+            margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 15.0),
+            elevation: 5.0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15.0),
             ),
+            child: ListTile(
+              leading: Icon(Icons.school, color: Color(0xFF67358E)),
+              title: Text(
+                _instituciones[index]['si_nombre'],
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF67358E),
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('CCT: ${_instituciones[index]['si_cct']}'),
+                  Text('Ubicación: ${_instituciones[index]['si_ubicacion']}'),
+                  Text('Régimen: ${_instituciones[index]['si_regimen']}'),
+                  Text('Sostenimiento: ${_instituciones[index]['si_sostenimiento']}'),
+                  Text('Acreditación: ${_instituciones[index]['si_acreditacion']}'),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
