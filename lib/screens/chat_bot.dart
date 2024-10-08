@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:intl/intl.dart';
+import 'package:connectivity_plus/connectivity_plus.dart'; // Importar paquete de conectividad
 
 const String apiKey = "AIzaSyC8k6REIl0KhGzggzwRX4TXVBJjOfvGbmk"; // Reemplaza con tu API key de Google Generative AI
 
@@ -19,7 +22,9 @@ class _ChatBotViewState extends State<ChatBotView> {
   late FlutterTts _flutterTts;
   late final GenerativeModel _model;
   late final ChatSession _chatSession;
+  late StreamSubscription _connectivitySubscription; // Para escuchar cambios de conectividad
   bool _isListening = false;
+  bool _isConnected = true; // Variable para almacenar estado de conexión
   String _speechText = '';
   String _selectedLanguage = "en-US";
 
@@ -28,15 +33,51 @@ class _ChatBotViewState extends State<ChatBotView> {
     super.initState();
     _speech = stt.SpeechToText();
     _flutterTts = FlutterTts();
-    _model = GenerativeModel(model: 'gemini-pro', apiKey: apiKey); 
+    _model = GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
     _chatSession = _model.startChat();
-    requestMicrophonePermission(); // Solicita permisos al iniciar
+    requestMicrophonePermission();
+    checkInternetConnection(); // Verificar la conexión al iniciar
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(_updateConnectionStatus); // Escuchar cambios en la conexión
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel(); // Cancelar la suscripción cuando el widget se destruye
+    super.dispose();
   }
 
   Future<void> requestMicrophonePermission() async {
     var status = await Permission.microphone.status;
     if (!status.isGranted) {
       await Permission.microphone.request();
+    }
+  }
+
+  Future<void> checkInternetConnection() async {
+    // Verifica el estado de la conexión
+    var connectivityResult = await Connectivity().checkConnectivity();
+    _updateConnectionStatus(connectivityResult);
+  }
+
+  void _updateConnectionStatus(ConnectivityResult result) {
+    setState(() {
+      _isConnected = result != ConnectivityResult.none;
+    });
+
+    if (!_isConnected) {
+      // Si no hay conexión, muestra un mensaje
+      setState(() {
+        _messages.add(ChatMessage(
+            text: "No hay conexión a Internet. Conéctate a una red para enviar mensajes.",
+            isUser: false));
+      });
+    } else {
+      // Cuando se recupere la conexión
+      setState(() {
+        _messages.add(ChatMessage(
+            text: "Conexión a Internet restaurada. Ya puedes enviar mensajes.",
+            isUser: false));
+      });
     }
   }
 
@@ -75,6 +116,18 @@ class _ChatBotViewState extends State<ChatBotView> {
   }
 
   void _sendMessage() async {
+    await checkInternetConnection(); // Verificar la conexión antes de enviar un mensaje
+
+    if (!_isConnected) {
+      // Si no hay conexión, no permitir enviar mensajes
+      setState(() {
+        _messages.add(ChatMessage(
+            text: "No se puede enviar el mensaje. Conéctate a Internet.",
+            isUser: false));
+      });
+      return;
+    }
+
     if (_controller.text.isNotEmpty) {
       setState(() {
         _messages.add(ChatMessage(text: _controller.text, isUser: true));
@@ -155,13 +208,14 @@ class _ChatBotViewState extends State<ChatBotView> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
+                    enabled: _isConnected, // Deshabilitar si no hay conexión
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
                   color: const Color(0xFF67358E),
                   iconSize: 35,
-                  onPressed: _sendMessage,
+                  onPressed: _isConnected ? _sendMessage : null, // Deshabilitar el botón si no hay conexión
                 ),
               ],
             ),
@@ -220,8 +274,8 @@ class ChatBubble extends StatelessWidget {
               child: Text(
                 message.text,
                 style: const TextStyle(color: Colors.white),
-                softWrap: true, // Permite que el texto se ajuste automáticamente
-                overflow: TextOverflow.clip, // Evita que el texto se desborde
+                softWrap: true,
+                overflow: TextOverflow.clip,
               ),
             ),
           ),
