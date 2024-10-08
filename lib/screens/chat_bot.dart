@@ -1,12 +1,12 @@
 import 'dart:async';
-
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:intl/intl.dart';
-import 'package:connectivity_plus/connectivity_plus.dart'; // Importar paquete de conectividad
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 const String apiKey = "AIzaSyC8k6REIl0KhGzggzwRX4TXVBJjOfvGbmk"; // Reemplaza con tu API key de Google Generative AI
 
@@ -22,9 +22,11 @@ class _ChatBotViewState extends State<ChatBotView> {
   late FlutterTts _flutterTts;
   late final GenerativeModel _model;
   late final ChatSession _chatSession;
-  late StreamSubscription _connectivitySubscription; // Para escuchar cambios de conectividad
+  late StreamSubscription _connectivitySubscription;
   bool _isListening = false;
-  bool _isConnected = true; // Variable para almacenar estado de conexión
+  bool _isConnected = true; // Estado actual de la conexión
+  bool _hasShownNoConnectionMessage = false; // Controla si ya se mostró el mensaje de no conexión
+  bool _hasShownReconnectedMessage = false;  // Controla si ya se mostró el mensaje de reconexión
   String _speechText = '';
   String _selectedLanguage = "en-US";
 
@@ -36,13 +38,14 @@ class _ChatBotViewState extends State<ChatBotView> {
     _model = GenerativeModel(model: 'gemini-pro', apiKey: apiKey);
     _chatSession = _model.startChat();
     requestMicrophonePermission();
-    checkInternetConnection(); // Verificar la conexión al iniciar
-    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(_updateConnectionStatus); // Escuchar cambios en la conexión
+    checkInternetConnection();
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
+    _loadMessages(); // Cargar mensajes guardados al iniciar
   }
 
   @override
   void dispose() {
-    _connectivitySubscription.cancel(); // Cancelar la suscripción cuando el widget se destruye
+    _connectivitySubscription.cancel();
     super.dispose();
   }
 
@@ -54,29 +57,34 @@ class _ChatBotViewState extends State<ChatBotView> {
   }
 
   Future<void> checkInternetConnection() async {
-    // Verifica el estado de la conexión
     var connectivityResult = await Connectivity().checkConnectivity();
     _updateConnectionStatus(connectivityResult);
   }
 
   void _updateConnectionStatus(ConnectivityResult result) {
+    bool connected = result != ConnectivityResult.none;
+
     setState(() {
-      _isConnected = result != ConnectivityResult.none;
+      _isConnected = connected;
     });
 
-    if (!_isConnected) {
-      // Si no hay conexión, muestra un mensaje
+    if (!_isConnected && !_hasShownNoConnectionMessage) {
+      // Si no hay conexión y no se ha mostrado el mensaje antes
       setState(() {
         _messages.add(ChatMessage(
             text: "No hay conexión a Internet. Conéctate a una red para enviar mensajes.",
             isUser: false));
+        _hasShownNoConnectionMessage = true;
+        _hasShownReconnectedMessage = false; // Resetear el mensaje de reconexión
       });
-    } else {
-      // Cuando se recupere la conexión
+    } else if (_isConnected && !_hasShownReconnectedMessage) {
+      // Si hay conexión y no se ha mostrado el mensaje de reconexión antes
       setState(() {
         _messages.add(ChatMessage(
             text: "Conexión a Internet restaurada. Ya puedes enviar mensajes.",
             isUser: false));
+        _hasShownReconnectedMessage = true;
+        _hasShownNoConnectionMessage = false; // Resetear el mensaje de no conexión
       });
     }
   }
@@ -99,7 +107,7 @@ class _ChatBotViewState extends State<ChatBotView> {
           onResult: (val) {
             setState(() {
               _speechText = val.recognizedWords;
-              _controller.text = _speechText; // Actualiza el input
+              _controller.text = _speechText;
             });
           },
           localeId: _selectedLanguage,
@@ -116,10 +124,9 @@ class _ChatBotViewState extends State<ChatBotView> {
   }
 
   void _sendMessage() async {
-    await checkInternetConnection(); // Verificar la conexión antes de enviar un mensaje
+    await checkInternetConnection();
 
     if (!_isConnected) {
-      // Si no hay conexión, no permitir enviar mensajes
       setState(() {
         _messages.add(ChatMessage(
             text: "No se puede enviar el mensaje. Conéctate a Internet.",
@@ -148,6 +155,7 @@ class _ChatBotViewState extends State<ChatBotView> {
           _messages.add(ChatMessage(text: botResponse, isUser: false));
         });
 
+        _saveMessages(); // Guardar los últimos 6 mensajes después de cada respuesta
         await _speak(botResponse);
       } catch (e) {
         setState(() {
@@ -167,6 +175,33 @@ class _ChatBotViewState extends State<ChatBotView> {
     setState(() {
       _selectedLanguage = languageCode;
     });
+  }
+
+  // Guardar los últimos 6 mensajes en SharedPreferences
+  Future<void> _saveMessages() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String> messagesToSave = _messages
+        .take(20)
+        .map((msg) => "${msg.isUser ? 'user:' : 'bot:'}${msg.text}")
+        .toList();
+    await prefs.setStringList('chatMessages', messagesToSave);
+  }
+
+  // Cargar mensajes guardados al iniciar la aplicación
+  Future<void> _loadMessages() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? savedMessages = prefs.getStringList('chatMessages');
+
+    if (savedMessages != null) {
+      setState(() {
+        _messages.clear();
+        _messages.addAll(savedMessages.map((msg) {
+          bool isUser = msg.startsWith('user:');
+          String text = msg.replaceFirst(isUser ? 'user:' : 'bot:', '');
+          return ChatMessage(text: text, isUser: isUser);
+        }).toList());
+      });
+    }
   }
 
   @override
@@ -208,14 +243,14 @@ class _ChatBotViewState extends State<ChatBotView> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    enabled: _isConnected, // Deshabilitar si no hay conexión
+                    enabled: _isConnected,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.send),
                   color: const Color(0xFF67358E),
                   iconSize: 35,
-                  onPressed: _isConnected ? _sendMessage : null, // Deshabilitar el botón si no hay conexión
+                  onPressed: _isConnected ? _sendMessage : null,
                 ),
               ],
             ),
