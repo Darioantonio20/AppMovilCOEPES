@@ -28,6 +28,7 @@ dev_dependencies:
 
 flutter:
   assets:
+    - assets/images/upchiapas.png
     - assets/images/imgNanio.png
     - assets/images/imgUligami.png
     - assets/images/imgLuis.png

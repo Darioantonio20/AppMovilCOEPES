@@ -494,10 +494,10 @@
       "languageVersion": "3.5"
     }
   ],
-  "generated": "2024-10-08T05:42:18.721801Z",
+  "generated": "2024-10-30T04:01:55.059861Z",
   "generator": "pub",
-  "generatorVersion": "3.5.3",
+  "generatorVersion": "3.5.4",
   "flutterRoot": "file:///opt/homebrew/Caskroom/flutter/3.22.2/flutter",
-  "flutterVersion": "3.24.3",
+  "flutterVersion": "3.24.4",
   "pubCache": "file:///Users/darioantoniogutierrezalvarez/.pub-cache"
 }

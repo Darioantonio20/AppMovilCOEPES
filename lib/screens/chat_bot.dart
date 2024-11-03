@@ -177,17 +177,15 @@ class _ChatBotViewState extends State<ChatBotView> {
     });
   }
 
-  // Guardar los últimos 6 mensajes en SharedPreferences
   Future<void> _saveMessages() async {
     final prefs = await SharedPreferences.getInstance();
     List<String> messagesToSave = _messages
-        .take(20)
+        .take(6)
         .map((msg) => "${msg.isUser ? 'user:' : 'bot:'}${msg.text}")
         .toList();
     await prefs.setStringList('chatMessages', messagesToSave);
   }
 
-  // Cargar mensajes guardados al iniciar la aplicación
   Future<void> _loadMessages() async {
     final prefs = await SharedPreferences.getInstance();
     List<String>? savedMessages = prefs.getStringList('chatMessages');
